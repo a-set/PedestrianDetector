@@ -3,7 +3,7 @@ Itrain = im2double(rgb2gray(imread('test0.jpg')));
 
 %have the user click on some training examples.  
 % If there is more than 1 example in the training image (e.g. faces), you could set nclicks higher here and average together
-nclick = 1;
+nclick = 3;
 figure(1); clf;
 imshow(Itrain);
 [x,y] = ginput(nclick); %get nclicks from the user

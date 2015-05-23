@@ -1,8 +1,23 @@
 % load a training example image
-Itrain = im2double(rgb2gray(imread('test0.jpg')));
+Itrain = im2double(rgb2gray(imread('train.jpg')));
+%for 100 negative examples
+i =1;
+Itrain2 = im2double(rgb2gray(imread('test3.jpg')));
+nSamples = cell(1,100);
+%Built negative samples
+xnmin =1;
+ynmin =1;
+[hn,wn] = size(Itrain2);
+while (xnmin +150 < wn && ynmin +600 < hn)
+    nSamples{i} = Itrain2(ynmin:ynmin+600,xnmin:xnmin+150);
+    ynmin = ynmin + 1;
+    xnmin = xnmin + 1;
+    i = i+1;
+end
 
-%have the user select 8 positive examples in the image
-n = 3;
+
+%have the user select 5 positive examples in the image
+n = 5;
 imshow(Itrain);
 Rect = cell(1,n);
 ar = zeros(1,n);
@@ -67,7 +82,7 @@ for i=1:n
 end
 
 %Compute the template from the hog feature set of training samples
-Features = cell(1,n);
+Features = cell(1,n+100);
 Template = zeros(finalH,finalW);
 Template = hog(Template);
 h1 = size(Template,1);
@@ -79,7 +94,13 @@ for i=1:n
     Features{i} = reshape(Features{i},[1 h1*w1*b1]);
     Template = Template + Features{i};
 end
-Template = Template./n;
+%add negative samples
+for i=1:100
+    Features{n+i} = hog(imresize(nSamples{i},[finalH,finalW]));
+    Features{n+i} = reshape(Features{n+i},[1 h1*w1*b1]);
+    Template = Template + Features{n+i};
+end
+Template = Template./(n+100);
 %resize back to 3D template
 Template = reshape(Template,[h1 w1 b1]);
 
@@ -91,7 +112,7 @@ Itest= im2double(rgb2gray(imread('test0.jpg')));
 
 % find top 5 detections in Itest
 ndet = 5;
-[x,y,score] = detect(Itest,template,ndet);
+[x,y,score] = detect(Itest,Template,ndet);
 
 %display top ndet detections
 figure(3); clf; imshow(Itest);
